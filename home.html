@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0891b2">
+    <meta name="description" content="Bản đồ vệ tinh Phường Long Hương, TP.HCM">
+    <title>Phường Long Hương - Bản Đồ Vệ Tinh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: #f0f9ff;
+            color: #1a1a1a;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+            color: white;
+            padding: 30px 20px 40px;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 20px rgba(8, 145, 178, 0.2);
+        }
+
+        .header-emoji {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        /* Container */
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Cards Grid */
+        .cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            animation: slideUp 0.5s ease;
+        }
+
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 16px rgba(8, 145, 178, 0.15);
+            border-color: #0891b2;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+            color: white;
+            padding: 24px 20px;
+            text-align: center;
+        }
+
+        .card-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-desc {
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        .feature-icon {
+            color: #0891b2;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .btn-card {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+        }
+
+        .btn-card:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(8, 145, 178, 0.3);
+        }
+
+        /* Demo Box */
+        .demo-box {
+            background: linear-gradient(135deg, #e0f2fe 0%, #cffafe 100%);
+            border: 2px solid #bae6fd;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .demo-emoji {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .demo-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0c7792;
+            margin-bottom: 8px;
+        }
+
+        .demo-info {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #475569;
+            text-align: left;
+            line-height: 1.8;
+        }
+
+        .demo-info strong {
+            color: #0891b2;
+            display: block;
+            margin-top: 6px;
+        }
+
+        .demo-info strong:first-child {
+            margin-top: 0;
+        }
+
+        /* Tips */
+        .tips {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .tips-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+
+        .tips-list {
+            font-size: 12px;
+            color: #78350f;
+            line-height: 1.8;
+        }
+
+        .tips-list li {
+            margin-left: 16px;
+            margin-bottom: 6px;
+        }
+
+        /* Status */
+        .status {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .status-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .status-text {
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 30px;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100%;
+            }
+
+            .header {
+                padding: 25px 15px 35px;
+                border-radius: 0 0 16px 16px;
+            }
+
+            .cards {
+                gap: 14px;
+            }
+
+            .card-header {
+                padding: 20px 16px;
+            }
+
+            .card-body {
+                padding: 16px;
+            }
+
+            .btn-card {
+                padding: 11px 14px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .header-emoji {
+                font-size: 42px;
+                margin-bottom: 10px;
+            }
+
+            .card-icon {
+                font-size: 36px;
+            }
+
+            .card-title {
+                font-size: 16px;
+            }
+
+            .demo-emoji {
+                font-size: 28px;
+            }
+        }
+
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(12px, env(safe-area-inset-left));
+                padding-right: max(12px, env(safe-area-inset-right));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <span class="header-emoji">🗺️</span>
+        <h1>Phường Long Hương</h1>
+        <p>Thành phố Hồ Chí Minh</p>
+    </div>
+
+    <!-- Main -->
+    <div class="container">
+        <!-- Status -->
+        <div class="status">
+            <div class="status-icon">✓</div>
+            <div class="status-text">
+                <strong style="color: #0891b2;">Sẵn Sàng Sử Dụng</strong>
+                Bản đồ vệ tinh tương tác
+            </div>
+        </div>
+
+        <!-- Demo -->
+        <div class="demo-box">
+            <div class="demo-emoji">🔲</div>
+            <div class="demo-title">Thửa Đất Demo</div>
+            <div class="demo-info">
+                <strong>Số thửa: 222</strong>
+                <strong>Số tờ: 74</strong>
+                <strong>Quét QR để zoom</strong>
+            </div>
+        </div>
+
+        <!-- Cards -->
+        <div class="cards">
+            <!-- Map Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🛰️</span>
+                    <div class="card-title">Bản Đồ Vệ Tinh</div>
+                    <div class="card-subtitle">Xem dữ liệu địa lý</div>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">
+                        Bản đồ vệ tinh HD với dữ liệu thửa đất
+                    </p>
+                    <div class="features">
+                        <div class="feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Zoom chi tiết thửa đất</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Tìm kiếm theo số thửa</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Xem tọa độ GPS</span>
+                        </div>
+                    </div>
+                    <a href="index.html" class="btn-card">
+                        📍 Mở Bản Đồ
+                    </a>
+                </div>
+            </div>
+
+            <!-- QR Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📱</span>
+                    <div class="card-title">Tạo Mã QR</div>
+                    <div class="card-subtitle">Chia sẻ vị trí</div>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">
+                        Tạo QR để chia sẻ thửa đất
+                    </p>
+                    <div class="features">
+                        <div class="feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Tạo QR nhanh</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Tải PNG để in</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Chia sẻ URL</span>
+                        </div>
+                    </div>
+                    <a href="qr-generator.html" class="btn-card">
+                        🔲 Tạo QR
+                    </a>
+                </div>
+            </div>
+
+            <!-- Demo Link -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🎯</span>
+                    <div class="card-title">Xem Demo</div>
+                    <div class="card-subtitle">Thửa 222</div>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">
+                        Zoom vào thửa đất demo sẵn sàng
+                    </p>
+                    <div class="features">
+                        <div class="feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Zoom tự động</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Xem chi tiết vị trí</span>
+                        </div>
+                    </div>
+                    <a href="index.html?lat=10.482466795764072&lng=107.15473449851876&z=18&sothua=222" class="btn-card">
+                        🚀 Xem Ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="tips">
+            <div class="tips-title">💡 Gợi Ý Hữu Ích</div>
+            <ul class="tips-list">
+                <li>✓ Nhấn bấm thẻ card để mở tính năng</li>
+                <li>✓ Quét mã QR để chia sẻ vị trí</li>
+                <li>✓ Sử dụng trên điện thoại hoặc máy tính</li>
+                <li>✓ Ctrl+F5 nếu bản đồ không tải</li>
+            </ul>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>🗺️ Phường Long Hương Map System</p>
+            <p style="margin-top: 6px;">Made with ❤️ for Local Community</p>
+        </div>
+    </div>
+</body>
+</html>
