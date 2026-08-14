@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#0891b2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Bản Đồ Phường Long Hương - TP.HCM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: #1a1a1a;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 340px;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            overflow-y: auto;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+            color: white;
+            padding: 25px 20px;
+            border-bottom: 2px solid #0e7490;
+        }
+
+        .sidebar-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            letter-spacing: -0.5px;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-track {
+            background: #f0f0f0;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: #0891b2;
+            border-radius: 3px;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #0891b2;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0891b2;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #0c7792;
+            margin-top: 4px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .control-item {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-item button {
+            flex: 1;
+            padding: 10px 12px;
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-item button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+        }
+
+        .control-item button:active {
+            transform: translateY(0);
+        }
+
+        /* Search */
+        .search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #0891b2;
+            box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .info-card h3 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+
+        .info-item {
+            font-size: 11px;
+            color: #475569;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-item strong {
+            color: #0891b2;
+        }
+
+        /* Feature List */
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .feature-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .feature-item:hover {
+            background: #f0f9ff;
+            border-color: #0891b2;
+            box-shadow: 0 2px 6px rgba(8, 145, 178, 0.2);
+        }
+
+        .feature-item-name {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 3px;
+        }
+
+        .feature-item-desc {
+            color: #64748b;
+            font-size: 10px;
+        }
+
+        /* Map Container */
+        .map-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Map Controls */
+        .map-control {
+            position: absolute;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 999;
+        }
+
+        .basemap-selector {
+            top: 20px;
+            right: 20px;
+            padding: 12px;
+        }
+
+        .basemap-selector select {
+            padding: 6px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .coordinates {
+            bottom: 20px;
+            left: 20px;
+            padding: 12px;
+            font-size: 11px;
+            color: #64748b;
+            font-family: 'Courier New', monospace;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Status */
+        .status-bar {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 11px;
+            z-index: 500;
+        }
+
+        .status-bar.loading {
+            color: #f59e0b;
+        }
+
+        .status-bar.success {
+            color: #10b981;
+        }
+
+        .status-bar.error {
+            color: #ef4444;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            body {
+                height: 100vh;
+                position: fixed;
+                width: 100%;
+                overflow: hidden;
+            }
+
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: 0;
+                overflow: hidden;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                transition: max-height 0.3s ease;
+                background: white;
+                z-index: 999;
+                border-radius: 0;
+                max-height: 100vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .sidebar:not(.active) {
+                max-height: 0;
+                overflow: hidden;
+            }
+
+            .sidebar.active {
+                max-height: 100vh;
+            }
+
+            .map-container {
+                flex: 1;
+                width: 100%;
+                height: calc(100vh - 50px);
+            }
+
+            .menu-toggle {
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                width: 44px;
+                height: 44px;
+                background: white;
+                border: none;
+                border-radius: 10px;
+                cursor: pointer;
+                font-size: 20px;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+                z-index: 1001;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+            }
+
+            .sidebar-header {
+                padding: 16px 16px 12px;
+            }
+
+            .sidebar-header h1 {
+                font-size: 18px;
+                margin-bottom: 3px;
+            }
+
+            .sidebar-header p {
+                font-size: 11px;
+            }
+
+            .sidebar-content {
+                padding: 12px 16px;
+            }
+
+            .section {
+                margin-bottom: 18px;
+            }
+
+            .section-title {
+                font-size: 11px;
+                margin-bottom: 10px;
+                padding-bottom: 6px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .stat-label {
+                font-size: 10px;
+                margin-top: 3px;
+            }
+
+            .search-box input {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+
+            .control-item {
+                flex-direction: column;
+            }
+
+            .control-item button {
+                padding: 9px 12px;
+                font-size: 11px;
+            }
+
+            .info-card {
+                padding: 10px;
+                margin-bottom: 8px;
+            }
+
+            .info-card h3 {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+
+            .info-item {
+                font-size: 10px;
+                margin-bottom: 4px;
+            }
+
+            .legend-item {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+
+            .basemap-selector {
+                top: 60px;
+                right: 10px;
+                padding: 8px;
+            }
+
+            .basemap-selector select {
+                font-size: 11px;
+                padding: 5px 8px;
+            }
+
+            .coordinates {
+                bottom: 60px;
+                left: 10px;
+                padding: 8px 10px;
+                font-size: 10px;
+            }
+
+            .status-bar {
+                bottom: 60px;
+                right: 10px;
+                padding: 8px 10px;
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar-header h1 {
+                font-size: 16px;
+            }
+
+            .stat-value {
+                font-size: 18px;
+            }
+
+            .basemap-selector {
+                top: 55px;
+            }
+
+            .menu-toggle {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #e5e7eb;
+            border-top: 2px solid #0891b2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Legend */
+        .legend {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 11px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <!-- Header -->
+            <div class="sidebar-header">
+                <h1>📍 Phường Long Hương</h1>
+                <p>Thành phố Hồ Chí Minh, Việt Nam</p>
+            </div>
+
+            <!-- Content -->
+            <div class="sidebar-content">
+                <!-- Stats -->
+                <div class="section">
+                    <div class="section-title">📊 Thống Kê</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="featureCount">-</div>
+                            <div class="stat-label">Features</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="zoomLevel">12</div>
+                            <div class="stat-label">Zoom</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="section">
+                    <div class="section-title">🎮 Kiểm Soát</div>
+
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm...">
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-item">
+                            <button onclick="resetMap()">🔄 Reset</button>
+                            <button onclick="zoomToAll()">📍 Zoom All</button>
+                        </div>
+                        <button onclick="toggleSatellite()" style="width: 100%;">🛰️ Chế Độ Vệ Tinh</button>
+                    </div>
+                </div>
+
+                <!-- Information -->
+                <div class="section">
+                    <div class="section-title">ℹ️ Thông Tin</div>
+                    <div class="info-card">
+                        <h3>Phường Long Hương</h3>
+                        <div class="info-item">
+                            <strong>Tỉnh/TP:</strong>
+                            <span>TP.HCM</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Quận:</strong>
+                            <span>Quận 7</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Tọa độ:</strong>
+                            <span id="coordInfo">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="section">
+                    <div class="section-title">🗺️ Chú Giải</div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #0891b2;"></div>
+                            <span>Đất Công</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #059669;"></div>
+                            <span>Đất Nông Nghiệp</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #7c3aed;"></div>
+                            <span>Đất Lâm Nghiệp</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ea580c;"></div>
+                            <span>Khác</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features List -->
+                <div class="section" id="featuresSection" style="display: none;">
+                    <div class="section-title">📌 Danh Sách Features</div>
+                    <div class="feature-list" id="featuresList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="map-container">
+            <div id="map"></div>
+
+            <!-- Basemap Selector -->
+            <div class="map-control basemap-selector">
+                <select id="basemapSelect" onchange="changeBasemap()">
+                    <option value="satellite">🛰️ Vệ Tinh</option>
+                    <option value="osm">🗺️ OpenStreetMap</option>
+                    <option value="street">🛣️ Street Map</option>
+                </select>
+            </div>
+
+            <!-- Coordinates -->
+            <div class="coordinates">
+                <div id="coordDisplay">Hover trên bản đồ để xem tọa độ</div>
+            </div>
+
+            <!-- Status -->
+            <div class="status-bar success">
+                ✓ Sẵn sàng
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Map Configuration
+        const MAP_CENTER = [10.7, 106.8];
+        const MAP_ZOOM = 13;
+
+        let map = null;
+        let geoJsonLayer = null;
+        let allFeatures = [];
+        let currentBasemap = 'satellite';
+
+        // Basemap URLs
+        const BASEMAPS = {
+            satellite: {
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                attribution: '© Esri'
+            },
+            osm: {
+                url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                attribution: '© OpenStreetMap contributors'
+            },
+            street: {
+                url: 'https://{s}.basemaps.cartocdn.com/rastered/voyager/{z}/{x}/{y}{r}.png',
+                attribution: '© CartoDB'
+            }
+        };
+
+        // Initialize Map
+        function initMap() {
+            // Check for URL parameters
+            const params = new URLSearchParams(window.location.search);
+            const hasZoomParams = params.has('lat') && params.has('lng') && params.has('z');
+
+            let initialCenter = MAP_CENTER;
+            let initialZoom = MAP_ZOOM;
+
+            if (hasZoomParams) {
+                initialCenter = [parseFloat(params.get('lat')), parseFloat(params.get('lng'))];
+                initialZoom = parseInt(params.get('z')) || MAP_ZOOM;
+            }
+
+            map = L.map('map').setView(initialCenter, initialZoom);
+
+            // Add default basemap (satellite)
+            addBasemap('satellite');
+
+            // Load GeoJSON
+            loadGeoJSON();
+
+            // Mouse move event
+            map.on('mousemove', updateCoordinates);
+
+            // Zoom update
+            map.on('zoomend', updateZoomLevel);
+
+            // Mobile
+            document.getElementById('sidebar').classList.add('active');
+
+            // Show notification if zoomed to specific location
+            if (hasZoomParams) {
+                const sothua = params.get('sothua');
+                if (sothua) {
+                    setTimeout(() => {
+                        alert(`🗺️ Đang xem thửa đất số ${sothua}`);
+                    }, 500);
+                }
+            }
+        }
+
+        // Add Basemap
+        function addBasemap(type) {
+            // Remove existing layer
+            map.eachLayer(layer => {
+                if (layer instanceof L.TileLayer && !layer._url.includes('tile.openstreetmap')) {
+                    map.removeLayer(layer);
+                }
+                if (layer instanceof L.TileLayer && layer._url.includes('tile.openstreetmap')) {
+                    map.removeLayer(layer);
+                }
+                if (layer instanceof L.TileLayer && layer._url.includes('arcgisonline')) {
+                    map.removeLayer(layer);
+                }
+                if (layer instanceof L.TileLayer && layer._url.includes('cartocdn')) {
+                    map.removeLayer(layer);
+                }
+            });
+
+            const bm = BASEMAPS[type];
+            L.tileLayer(bm.url, {
+                attribution: bm.attribution,
+                maxZoom: 19
+            }).addTo(map);
+
+            currentBasemap = type;
+        }
+
+        // Change Basemap
+        function changeBasemap() {
+            const type = document.getElementById('basemapSelect').value;
+            addBasemap(type);
+        }
+
+        // Toggle Satellite
+        function toggleSatellite() {
+            const type = currentBasemap === 'satellite' ? 'osm' : 'satellite';
+            document.getElementById('basemapSelect').value = type;
+            addBasemap(type);
+        }
+
+        // Load GeoJSON
+        async function loadGeoJSON() {
+            try {
+                const response = await fetch('DatCong.geojson');
+                if (!response.ok) throw new Error('Không thể tải file');
+
+                const data = await response.json();
+                allFeatures = data.features || [];
+
+                renderGeoJSON(data);
+                updateStats();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Render GeoJSON
+        function renderGeoJSON(data) {
+            if (geoJsonLayer) map.removeLayer(geoJsonLayer);
+
+            geoJsonLayer = L.geoJSON(data, {
+                pointToLayer: (feature, latlng) => {
+                    return L.circleMarker(latlng, {
+                        radius: 6,
+                        fillColor: getColor(feature.properties),
+                        color: 'white',
+                        weight: 2,
+                        opacity: 0.9,
+                        fillOpacity: 0.7
+                    });
+                },
+                style: feature => ({
+                    color: '#ef4444',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0
+                }),
+                onEachFeature: (feature, layer) => {
+                    layer.bindPopup(createPopup(feature.properties));
+                }
+            }).addTo(map);
+
+            if (geoJsonLayer.getBounds().isValid()) {
+                map.fitBounds(geoJsonLayer.getBounds(), { padding: [100, 100] });
+            }
+        }
+
+        // Get Color
+        function getColor(props) {
+            if (!props) return '#0891b2';
+            const type = String(props.type || '').toLowerCase();
+            if (type.includes('nông')) return '#059669';
+            if (type.includes('lâm')) return '#7c3aed';
+            if (type.includes('khoáng')) return '#ea580c';
+            return '#0891b2';
+        }
+
+        // Create Popup
+        function createPopup(props) {
+            if (!props || Object.keys(props).length === 0) return 'No data';
+            let html = '<div style="max-width: 250px;">';
+            for (const [key, value] of Object.entries(props)) {
+                if (value) {
+                    html += `<div style="margin-bottom: 4px;"><strong>${key}:</strong> ${String(value).substring(0, 50)}</div>`;
+                }
+            }
+            html += '</div>';
+            return html;
+        }
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', e => {
+            const term = e.target.value.toLowerCase();
+            if (!term) {
+                renderGeoJSON({ features: allFeatures });
+                return;
+            }
+            const filtered = allFeatures.filter(f => {
+                const props = f.properties || {};
+                return Object.values(props).some(v => String(v).toLowerCase().includes(term));
+            });
+            renderGeoJSON({ features: filtered });
+            updateStats(filtered.length);
+        });
+
+        // Update Stats
+        function updateStats(count = null) {
+            const total = count !== null ? count : allFeatures.length;
+            document.getElementById('featureCount').textContent = total;
+        }
+
+        // Update Zoom Level
+        function updateZoomLevel() {
+            document.getElementById('zoomLevel').textContent = map.getZoom();
+        }
+
+        // Update Coordinates
+        function updateCoordinates(e) {
+            const lat = e.latlng.lat.toFixed(6);
+            const lng = e.latlng.lng.toFixed(6);
+            document.getElementById('coordDisplay').textContent = `${lat}, ${lng}`;
+            document.getElementById('coordInfo').textContent = `${lat}, ${lng}`;
+        }
+
+        // Reset Map
+        function resetMap() {
+            map.setView(MAP_CENTER, MAP_ZOOM);
+            document.getElementById('searchInput').value = '';
+            if (geoJsonLayer) renderGeoJSON({ features: allFeatures });
+            updateStats();
+        }
+
+        // Zoom To All
+        function zoomToAll() {
+            if (geoJsonLayer && geoJsonLayer.getBounds().isValid()) {
+                map.fitBounds(geoJsonLayer.getBounds(), { padding: [100, 100] });
+            }
+        }
+
+        // Toggle Sidebar (Mobile)
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Initialize on Load
+        window.addEventListener('load', initMap);
+    </script>
+</body>
+</html>
