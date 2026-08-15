@@ -604,7 +604,7 @@
 
     <script>
         // Configuration
-        const MAP_CENTER = [10.509042, 107.154897];
+        const MAP_CENTER = [10.508760, 107.155479];
         const MAP_ZOOM = 14;
         const KHUPHO_MIN_ZOOM = 13;
 
@@ -744,12 +744,15 @@
                     };
                     onEachFeatureFunc = (feature, layer) => {
                         const props = feature.properties || {};
+                        const idthua = props.idthua || props.Id_Thua || 'N/A';
+                        const shareLink = generateShareLink(idthua);
                         const popupHTML = `
-                            <div style="min-width: 250px; font-size: 12px;">
-                                <strong>THỬA ĐẤT CÔNG</strong><hr style="margin: 5px 0;">
-                                <table style="width: 100%; border-collapse: collapse;">
+                            <div style="min-width: 280px; font-size: 12px; font-family: 'Inter', sans-serif;">
+                                <strong style="color: #0891b2;">THỬA ĐẤT CÔNG</strong><hr style="margin: 5px 0; border: none; border-top: 1px solid #e5e7eb;">
+                                <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
                                     <tr><td style="padding: 4px;"><strong>Số tờ:</strong></td><td style="padding: 4px;">${props.So_To || 'N/A'}</td></tr>
                                     <tr><td style="padding: 4px;"><strong>Số thửa:</strong></td><td style="padding: 4px;">${props.Sothua || 'N/A'}</td></tr>
+                                    <tr><td style="padding: 4px;"><strong>ID Thửa:</strong></td><td style="padding: 4px; color: #0891b2; font-weight: 600;">${idthua}</td></tr>
                                     <tr><td style="padding: 4px;"><strong>Loại đất:</strong></td><td style="padding: 4px;">${props.LoaidatHT || 'N/A'}</td></tr>
                                     <tr><td style="padding: 4px;"><strong>Quy hoạch:</strong></td><td style="padding: 4px;">${props.LoaidatQH || 'N/A'}</td></tr>
                                     <tr><td style="padding: 4px;"><strong>Khu phố:</strong></td><td style="padding: 4px;">${props.Khuphomoi || 'N/A'}</td></tr>
@@ -757,6 +760,10 @@
                                     <tr><td style="padding: 4px;"><strong>Thành phố:</strong></td><td style="padding: 4px;">TP. Hồ Chí Minh</td></tr>
                                     <tr><td style="padding: 4px;"><strong>Diện tích:</strong></td><td style="padding: 4px;">${Math.round(props.Dientich || 0)} m²</td></tr>
                                 </table>
+                                <div style="display: flex; gap: 6px; margin-top: 10px;">
+                                    <button onclick="copyToClipboard('${shareLink}')" style="flex: 1; padding: 6px; background: #0891b2; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;">📋 Sao Chép Link</button>
+                                    <button onclick="window.open('https://maps.google.com/maps?q=${layer.getBounds().getCenter().lat},${layer.getBounds().getCenter().lng}', '_blank')" style="flex: 1; padding: 6px; background: #06b6d4; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;">🗺️ Google Maps</button>
+                                </div>
                             </div>
                         `;
                         layer.bindPopup(popupHTML);
@@ -895,8 +902,77 @@
             status.className = `map-control status ${type}`;
         }
 
+        // URL Parameters
+        function getURLParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                idthua: params.get('idthua')
+            };
+        }
+
+        function zoomToFeature(featureId) {
+            if (!layers.thuadatcong || !layers.thuadatcong.data) return;
+
+            const features = layers.thuadatcong.data.features || [];
+            const feature = features.find(f => String(f.properties.idthua || f.properties.Id_Thua) === String(featureId));
+
+            if (!feature || !layers.thuadatcong.layer) return;
+
+            layers.thuadatcong.layer.eachLayer(layer => {
+                if (layer.feature && (String(layer.feature.properties.idthua || layer.feature.properties.Id_Thua) === String(featureId))) {
+                    const bounds = layer.getBounds();
+                    map.fitBounds(bounds, { padding: [100, 100], maxZoom: 16 });
+                    setTimeout(() => {
+                        layer.openPopup();
+                    }, 300);
+                }
+            });
+        }
+
+        function generateShareLink(idthua) {
+            const baseUrl = window.location.origin + window.location.pathname;
+            return `${baseUrl}?idthua=${idthua}`;
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✓ Link đã sao chép vào clipboard!');
+                }).catch(err => {
+                    fallbackCopyToClipboard(text);
+                });
+            } else {
+                fallbackCopyToClipboard(text);
+            }
+        }
+
+        function fallbackCopyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('✓ Link đã sao chép vào clipboard!');
+            } catch (err) {
+                alert('❌ Không thể sao chép. Vui lòng thử lại.');
+            }
+            document.body.removeChild(textarea);
+        }
+
         // Start
-        window.addEventListener('load', initMap);
+        window.addEventListener('load', function() {
+            initMap();
+
+            setTimeout(() => {
+                const params = getURLParams();
+                if (params.idthua) {
+                    zoomToFeature(params.idthua);
+                }
+            }, 1500);
+        });
     </script>
 </body>
 </html>
