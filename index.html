@@ -921,7 +921,7 @@
             layers.thuadatcong.layer.eachLayer(layer => {
                 if (layer.feature && (String(layer.feature.properties.idthua || layer.feature.properties.Id_Thua) === String(featureId))) {
                     const bounds = layer.getBounds();
-                    map.fitBounds(bounds, { padding: [100, 100], maxZoom: 16 });
+                    map.fitBounds(bounds, { padding: [80, 80], maxZoom: 18 });
                     setTimeout(() => {
                         layer.openPopup();
                     }, 300);
