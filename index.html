@@ -962,17 +962,21 @@
             document.body.removeChild(textarea);
         }
 
-        // Start
-        window.addEventListener('load', function() {
-            initMap();
+window.addEventListener('load', async function() {
+    initMap();
 
-            setTimeout(() => {
-                const params = getURLParams();
-                if (params.idthua) {
-                    zoomToFeature(params.idthua);
-                }
-            }, 15000);
-        });
+    const params = getURLParams();
+
+    if (params.idthua) {
+        // Chờ dữ liệu GeoJSON tải xong
+        while (!layers.thuadatcong || !layers.thuadatcong.layer) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        // Zoom tới thửa
+        zoomToFeature(params.idthua);
+    }
+});
     </script>
 </body>
 </html>
