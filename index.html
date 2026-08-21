@@ -969,9 +969,16 @@ window.addEventListener('load', async function() {
 
     if (params.idthua) {
         // Chờ dữ liệu GeoJSON tải xong
-        while (!layers.thuadatcong || !layers.thuadatcong.layer) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
+const startTime = Date.now();
+
+while (!layers.thuadatcong || !layers.thuadatcong.layer) {
+    if (Date.now() - startTime > 15000) {
+        console.error('❌ Quá thời gian chờ tải dữ liệu thửa đất');
+        return;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+}
 
         // Zoom tới thửa
         zoomToFeature(params.idthua);
