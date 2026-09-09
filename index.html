@@ -643,22 +643,33 @@
         let currentBasemap = 'satellite';
 
         // Initialize
-        function initMap() {
-            map = L.map('map').setView(MAP_CENTER, MAP_ZOOM);
-            addBasemap('satellite');
-            loadGeoJSON();
+        async function initMap() {
+    map = L.map('map').setView(MAP_CENTER, MAP_ZOOM);
 
-            map.on('mousemove', updateCoordinates);
-            map.on('zoomend', updateZoomLevel);
-            map.on('zoomend', updateKhuphoVisibility);
+    addBasemap('satellite');
 
-            const basemapCheckbox = document.getElementById('control-basemap');
-            if (basemapCheckbox) {
-                basemapCheckbox.addEventListener('change', e => {
-                    toggleBasemap(e.target.checked);
-                });
-            }
-        }
+    map.on('mousemove', updateCoordinates);
+    map.on('zoomend', updateZoomLevel);
+    map.on('zoomend', updateKhuphoVisibility);
+
+    const basemapCheckbox = document.getElementById('control-basemap');
+
+    if (basemapCheckbox) {
+        basemapCheckbox.addEventListener('change', e => {
+            toggleBasemap(e.target.checked);
+        });
+    }
+
+    // QUAN TRỌNG:
+    // Chờ toàn bộ GeoJSON tải xong trước khi xử lý ID từ QR
+    await loadGeoJSON();
+
+    const params = getURLParams();
+
+    if (params.idthua) {
+        zoomToFeature(params.idthua);
+    }
+}
 
         // Basemap
         function addBasemap(type) {
@@ -677,45 +688,80 @@
         }
 
         // Load Layers
-        async function loadGeoJSON() {
-            try {
-                updateStatus('⏳ Đang tải...', 'loading');
+async function loadGeoJSON() {
+    try {
+        updateStatus('⏳ Đang tải...', 'loading');
 
-                const layerConfigs = {
-                    giaothong: { file: 'Giaothong.json', name: 'Giao Thông' },
-                    songngoi: { file: 'Songngoi.json', name: 'Sông Ngòi' },
-                    thuadatcong: { file: 'Thuadatcong.geojson', name: 'Thửa Đất Công' },
-                    phuongline: { file: 'Phuongline.json', name: 'Ranh Phường/Khu Phố' },
-                    khupho: { file: 'Khupho.json', name: 'Khu Phố' }
-                };
-
-                for (const [key, config] of Object.entries(layerConfigs)) {
-                    const filePath = BASE_PATH + config.file;
-                    const response = await fetch(filePath);
-                    if (!response.ok) throw new Error(`Lỗi tải ${config.file}: ${response.status}`);
-                    const data = await response.json();
-
-                    layers[key] = {
-                        data: data,
-                        layer: null,
-                        name: config.name,
-                        visible: true
-                    };
-
-                    renderLayer(key);
-                }
-
-                updateStats();
-                updateStatus('✓ Sẵn sàng', 'success');
-                document.getElementById('dataStatus').textContent = '✓ Đã tải';
-                document.getElementById('dataStatus').style.color = '#10b981';
-            } catch (error) {
-                console.error('Error:', error);
-                updateStatus('❌ Lỗi', 'error');
-                document.getElementById('dataStatus').textContent = '❌ Lỗi tải';
-                document.getElementById('dataStatus').style.color = '#ef4444';
+        const layerConfigs = {
+            giaothong: {
+                file: 'Giaothong.json',
+                name: 'Giao Thông'
+            },
+            songngoi: {
+                file: 'Songngoi.json',
+                name: 'Sông Ngòi'
+            },
+            thuadatcong: {
+                file: 'Thuadatcong.geojson',
+                name: 'Thửa Đất Công'
+            },
+            phuongline: {
+                file: 'Phuongline.json',
+                name: 'Ranh Phường/Khu Phố'
+            },
+            khupho: {
+                file: 'Khupho.json',
+                name: 'Khu Phố'
             }
+        };
+
+        for (const [key, config] of Object.entries(layerConfigs)) {
+
+            const filePath = BASE_PATH + config.file;
+
+            const response = await fetch(filePath);
+
+            if (!response.ok) {
+                throw new Error(
+                    `Lỗi tải ${config.file}: ${response.status}`
+                );
+            }
+
+            const data = await response.json();
+
+            layers[key] = {
+                data: data,
+                layer: null,
+                name: config.name,
+                visible: true
+            };
+
+            renderLayer(key);
         }
+
+        updateStats();
+
+        updateStatus('✓ Sẵn sàng', 'success');
+
+        document.getElementById('dataStatus').textContent = '✓ Đã tải';
+        document.getElementById('dataStatus').style.color = '#10b981';
+
+        // Có thể cập nhật visibility sau khi tạo layer
+        updateKhuphoVisibility();
+
+    } catch (error) {
+
+        console.error('Error:', error);
+
+        updateStatus('❌ Lỗi', 'error');
+
+        document.getElementById('dataStatus').textContent = '❌ Lỗi tải';
+        document.getElementById('dataStatus').style.color = '#ef4444';
+
+        // Quan trọng: báo lỗi cho initMap biết
+        throw error;
+    }
+}
 
         // Render Layer
         function renderLayer(key) {
@@ -973,16 +1019,13 @@
         }
 
         // Start
-        window.addEventListener('load', function() {
-            initMap();
-
-            setTimeout(() => {
-                const params = getURLParams();
-                if (params.idthua) {
-                    zoomToFeature(params.idthua);
-                }
-            }, 1500);
-        });
+window.addEventListener('load', async function() {
+    try {
+        await initMap();
+    } catch (error) {
+        console.error('Không thể khởi tạo bản đồ:', error);
+    }
+});
     </script>
 </body>
 </html>
